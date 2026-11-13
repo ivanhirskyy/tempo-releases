@@ -63,7 +63,7 @@ jobs:
             Future updates appear inside Tempo. Your local history and settings are preserved.
             Free, noncommercial companion. Not endorsed by Riot Games.
           releaseDraft: true
-          args: --bundles nsis --locked
+          args: --bundles nsis -- --locked
           updaterJsonPreferNsis: true
       - name: Validate update assets and publish
         shell: pwsh
