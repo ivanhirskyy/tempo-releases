@@ -1,0 +1,78 @@
+name: Publish Windows release
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version tag in the private source repository (for example v0.2.0)'
+        required: true
+        type: string
+permissions:
+  contents: write
+concurrency:
+  group: tempo-release
+  cancel-in-progress: false
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - name: Check out private source (read-only key)
+        uses: actions/checkout@v4
+        with:
+          repository: ivanhirskyy/tempo
+          ref: ${{ inputs.version }}
+          ssh-key: ${{ secrets.SOURCE_READ_KEY }}
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+      - run: npm ci
+      - name: Validate release version
+        shell: pwsh
+        env:
+          RELEASE_TAG: ${{ inputs.version }}
+        run: |
+          node --input-type=module -e "import fs from 'node:fs'; const p=JSON.parse(fs.readFileSync('package.json')); const t=JSON.parse(fs.readFileSync('src-tauri/tauri.conf.json')); const c=fs.readFileSync('src-tauri/Cargo.toml','utf8').match(/^version = \"([^\"]+)\"/m)[1]; if (!/^v\d+\.\d+\.\d+$/.test(process.env.RELEASE_TAG) || process.env.RELEASE_TAG !== 'v'+p.version || t.version !== p.version || c !== p.version) throw Error('Release versions do not match');"
+      - run: npm run check
+      - run: npm run lint
+      - run: npm test
+      - run: cargo test --locked --manifest-path src-tauri/Cargo.toml
+      - run: cargo clippy --locked --manifest-path src-tauri/Cargo.toml --all-targets --features desktop -- -D warnings
+      - name: Build signed installer and draft release
+        id: release
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ''
+        with:
+          owner: ivanhirskyy
+          repo: tempo-releases
+          tagName: ${{ inputs.version }}
+          releaseName: Tempo ${{ inputs.version }}
+          releaseBody: |
+            Download the x64-setup.exe below and run it to install Tempo on Windows 10/11 (64-bit).
+            Windows may show a SmartScreen warning: More info → Run anyway.
+            Future updates appear inside Tempo. Your local history and settings are preserved.
+            Free, noncommercial companion. Not endorsed by Riot Games.
+          releaseDraft: true
+          args: --bundles nsis --locked
+          updaterJsonPreferNsis: true
+      - name: Validate update assets and publish
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_TAG: ${{ inputs.version }}
+          RELEASE_ID: ${{ steps.release.outputs.releaseId }}
+        run: |
+          gh release download $env:RELEASE_TAG --repo ivanhirskyy/tempo-releases --pattern latest.json --dir update-check
+          node --input-type=module -e "import fs from 'node:fs'; const m=JSON.parse(fs.readFileSync('update-check/latest.json')); const p=m.platforms['windows-x86_64']; if(m.version.replace(/^v/,'')!==process.env.RELEASE_TAG.slice(1)||!p?.signature||!p.url.startsWith('https://github.com/ivanhirskyy/tempo-releases/releases/download/'+process.env.RELEASE_TAG+'/')) throw Error('Invalid updater manifest');"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          gh api --method PATCH repos/ivanhirskyy/tempo-releases/releases/$env:RELEASE_ID -F draft=false -f make_latest=true
