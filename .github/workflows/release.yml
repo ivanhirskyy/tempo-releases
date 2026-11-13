@@ -39,7 +39,7 @@ jobs:
         env:
           RELEASE_TAG: ${{ inputs.version }}
         run: |
-          node --input-type=module -e "import fs from 'node:fs'; const p=JSON.parse(fs.readFileSync('package.json')); const t=JSON.parse(fs.readFileSync('src-tauri/tauri.conf.json')); const c=fs.readFileSync('src-tauri/Cargo.toml','utf8').match(/^version = \"([^\"]+)\"/m)[1]; if (!/^v\d+\.\d+\.\d+$/.test(process.env.RELEASE_TAG) || process.env.RELEASE_TAG !== 'v'+p.version || t.version !== p.version || c !== p.version) throw Error('Release versions do not match');"
+          node scripts/validate-release.mjs
       - run: npm run check
       - run: npm run lint
       - run: npm test
@@ -73,6 +73,6 @@ jobs:
           RELEASE_ID: ${{ steps.release.outputs.releaseId }}
         run: |
           gh release download $env:RELEASE_TAG --repo ivanhirskyy/tempo-releases --pattern latest.json --dir update-check
-          node --input-type=module -e "import fs from 'node:fs'; const m=JSON.parse(fs.readFileSync('update-check/latest.json')); const p=m.platforms['windows-x86_64']; if(m.version.replace(/^v/,'')!==process.env.RELEASE_TAG.slice(1)||!p?.signature||!p.url.startsWith('https://github.com/ivanhirskyy/tempo-releases/releases/download/'+process.env.RELEASE_TAG+'/')) throw Error('Invalid updater manifest');"
+          node scripts/validate-release.mjs update-check/latest.json
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           gh api --method PATCH repos/ivanhirskyy/tempo-releases/releases/$env:RELEASE_ID -F draft=false -f make_latest=true
