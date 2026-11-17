@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Patch notes · Tempo</title>
+<meta name="description" content="What changed in each version of Tempo, the lightweight League of Legends companion, newest first.">
+<link rel="icon" href="img/icon.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="lp-root"><div class="lp"><header class="wrap nav"><a class="brand" href="index.html#top" aria-label="Tempo home">TEMPO</a>
+<nav class="nav-links" aria-label="Sections"><a href="index.html#performance">Performance</a><a href="index.html#features">Features</a><a href="index.html#screens">Screenshots</a><a href="index.html#trailer">Trailer</a><a href="patch-notes.html" aria-current="page">Patch notes</a><a href="index.html#download">Download</a></nav>
+<a class="btn btn-gold btn-sm" href="index.html#download"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M3 5.2 10.4 4.2v7.2H3zM11.4 4.05 21 2.7v8.7h-9.6zM3 12.4h7.4v7.3L3 18.7zM11.4 12.4H21v8.9l-9.6-1.35z"></path></svg>Download</a></header><main class="section" id="notes"><div class="wrap">
+<div class="sec-head"><p class="eyebrow">Patch notes</p><h1 class="h2">What changed in Tempo</h1><p class="body">Every version, newest first. The same notes you see inside the app.</p></div>
+<div class="pn"><nav class="pn-tree" aria-label="Versions"></nav><div class="pn-list"></div></div>
+<noscript><p class="body">Patch notes need JavaScript here. They are also on the <a href="https://github.com/ivanhirskyy/tempo-releases/releases">releases page</a>.</p></noscript>
+</div></main>
+<footer class="foot"><div class="wrap"><a class="brand" href="index.html#top">TEMPO</a>
+<nav aria-label="Footer"><a href="index.html#performance">Performance</a><a href="index.html#features">Features</a><a href="index.html#screens">Screenshots</a><a href="patch-notes.html">Patch notes</a></nav>
+<p class="credit">Developed by Next3Gen</p>
+<p class="legal">Tempo isn’t endorsed by Riot Games and doesn’t reflect the views or opinions of Riot Games or anyone officially involved in producing or managing Riot Games properties. Riot Games and all associated properties are trademarks or registered trademarks of Riot Games, Inc.</p></div></footer></div></div>
+<script src="patch-notes.js"></script>
+<script>
+  // Builds the page from the app's own notes (patch-notes.js is generated from data/patch-notes.json).
+  (function () {
+    var tree = document.querySelector('.pn-tree'), list = document.querySelector('.pn-list');
+    var el = function (tag, cls, text) { var n = document.createElement(tag); if (cls) n.className = cls; if (text) n.textContent = text; return n; };
+    var day = function (iso) { return new Date(iso + 'T00:00:00Z').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' }); };
+    (window.PATCH_NOTES || []).forEach(function (release, i) {
+      var id = 'v' + release.version;
+      var link = el('a', '', 'v' + release.version); link.href = '#' + id; tree.appendChild(link);
+      var card = el('article', 'pn-card'); card.id = id;
+      var head = el('header');
+      head.appendChild(el('h2', '', 'Version ' + release.version));
+      if (i === 0) head.appendChild(el('span', 'pn-latest', 'Latest'));
+      var time = el('time', '', day(release.date)); time.dateTime = release.date; head.appendChild(time);
+      var ul = el('ul');
+      release.notes.forEach(function (note) { ul.appendChild(el('li', '', note)); });
+      card.appendChild(head); card.appendChild(ul); list.appendChild(card);
+    });
+  })();
+</script>
+</body>
+</html>
