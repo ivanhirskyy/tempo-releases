@@ -6,7 +6,7 @@
 --panel-2:#121c28;
 --raised:#172331;
 --line:#1e2b3a;
---line-strong:#2b3c4f;
+--line-strong:#5f6c7a;
 --text:#e9e3d2;
 --muted:#8d99a6;
 --faint:#5f6c7a;
@@ -77,8 +77,11 @@
 
 .lp-root { container-type: inline-size; background: var(--bg); color: var(--text); font-family: var(--font-ui); font-size: 16px; line-height: 1.55; -webkit-font-smoothing: antialiased; }
 .lp-root * { box-sizing: border-box; }
-.lp-root img { display: block; max-width: 100%; }
-.lp { position: relative; overflow: hidden; }
+.lp-root img { display: block; max-width: 100%; height: auto; }
+.lp-root picture { display: contents; }
+.lp-root picture[hidden] { display: none; }
+/* clip, not hidden: hidden would make .lp the scroller and stop the patch-notes list sticking. */
+.lp { position: relative; overflow: hidden; overflow: clip; }
 .wrap { width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 32px; }
 
 /* shared type */
@@ -107,7 +110,12 @@
 
 /* nav */
 .nav { position: relative; z-index: 3; height: 72px; display: flex; align-items: center; gap: 32px; }
-.brand { font-family: var(--font-display); font-weight: 700; font-size: 22px; letter-spacing: .08em; color: var(--gold-bright); text-decoration: none; }
+.brand { font-family: var(--font-display); font-weight: 700; font-size: 22px; letter-spacing: .08em; color: var(--gold-bright); text-decoration: none; display: inline-flex; align-items: center; gap: 8px; }
+/* "Beta" tag: next to the brand and in the hero eyebrow. */
+.beta { display: inline-block; padding: 2px 8px; border: 1px solid var(--gold-deep); border-radius: 999px; font-family: var(--font-ui); font-size: 11px; line-height: 16px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--gold-bright); background: rgba(240, 213, 144, .08); vertical-align: middle; }
+.eyebrow .beta { margin-right: 10px; }
+.beta-note { max-width: 560px; margin: 16px auto 0; font-size: 14px; line-height: 1.5; color: var(--muted); }
+.beta-note a { color: var(--gold-bright); }
 .nav-links { display: flex; gap: 28px; }
 .nav-links a { color: var(--muted); text-decoration: none; font-size: 15px; font-weight: 600; }
 .nav-links a:hover { color: var(--text); }
@@ -183,7 +191,8 @@
 /* download band */
 .dl { position: relative; overflow: hidden; border-radius: 24px; border: 1px solid var(--gold-deep); padding: 64px 48px; text-align: center; background: radial-gradient(ellipse 60% 70% at 50% 0%, rgba(240, 213, 144, .16), rgba(240, 213, 144, 0)), var(--panel); }
 .dl .ring-big { width: 140px; height: 140px; margin: 0 auto 24px; color: var(--gold); position: relative; }
-.dl .ring-big svg { position: absolute; inset: 0; }
+/* The tick ring scales with its box: its width/height attributes would otherwise keep it at 140 px. */
+.dl .ring-big > svg { position: absolute; inset: 0; width: 100%; height: 100%; }
 .dl .ring-big .core { position: absolute; inset: 30px; border-radius: 50%; background: var(--gradient-gold); display: grid; place-items: center; box-shadow: 0 0 40px rgba(240, 213, 144, .4); }
 .dl .ring-big .core svg { position: static; width: 34px; height: 34px; color: var(--tier-ink); }
 .dl .lead { margin-left: auto; margin-right: auto; }
@@ -198,8 +207,8 @@
 .foot .wrap { display: flex; flex-wrap: wrap; gap: 16px 32px; align-items: center; }
 .foot nav { display: flex; gap: 24px; flex-wrap: wrap; }
 .foot nav a { color: var(--muted); text-decoration: none; font-size: 14px; font-weight: 600; }
-.foot .credit { margin: 0 0 0 auto; font-size: 13px; color: var(--faint); }
-.foot .legal { flex-basis: 100%; font-size: 13px; color: var(--faint); }
+.foot .credit { margin: 0 0 0 auto; font-size: 13px; color: var(--muted); }
+.foot .legal { flex-basis: 100%; font-size: 13px; color: var(--muted); }
 
 /* ---------- tablet ---------- */
 @container (max-width: 980px) {
@@ -322,8 +331,10 @@
 /* page basics */
 body{margin:0;background:#070b11}
 a{color:#f0d590}a:hover{color:#f6dc94}
-html{scroll-behavior:smooth}
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
 .sec-head .body { text-wrap: balance; }
+/* Headings wrap into even lines instead of leaving one word behind. */
+.h1, .h2, .dl .lead { text-wrap: balance; }
 
 /* trailer player */
 .trailer video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; background: var(--bg); cursor: pointer; }
@@ -341,8 +352,8 @@ html{scroll-behavior:smooth}
 .vtime { flex: none; font-size: 14px; font-weight: 700; color: var(--muted); font-variant-numeric: tabular-nums; }
 .vtime b { color: var(--gold-bright); font-weight: 800; }
 .vseek { flex: 1; min-width: 0; height: 20px; margin: 0; background: none; cursor: pointer; -webkit-appearance: none; appearance: none; --p: 0%; }
-.vseek::-webkit-slider-runnable-track { height: 6px; border-radius: 999px; background: linear-gradient(90deg, var(--gold-grad-bottom), var(--gold-bright) var(--p), #2b3c4f var(--p)); }
-.vseek::-moz-range-track { height: 6px; border-radius: 999px; background: #2b3c4f; }
+.vseek::-webkit-slider-runnable-track { height: 6px; border-radius: 999px; background: linear-gradient(90deg, var(--gold-grad-bottom), var(--gold-bright) var(--p), #5f6c7a var(--p)); }
+.vseek::-moz-range-track { height: 6px; border-radius: 999px; background: #5f6c7a; }
 .vseek::-moz-range-progress { height: 6px; border-radius: 999px; background: var(--gradient-gold); }
 .vseek::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; margin-top: -5px; border: 0; border-radius: 50%; background: var(--gold-bright); box-shadow: 0 0 12px rgba(240, 213, 144, .6); }
 .vseek::-moz-range-thumb { width: 16px; height: 16px; border: 0; border-radius: 50%; background: var(--gold-bright); box-shadow: 0 0 12px rgba(240, 213, 144, .6); }
@@ -352,7 +363,7 @@ html{scroll-behavior:smooth}
 /* patch notes page */
 .nav-links a[aria-current="page"] { color: var(--gold-bright); }
 .pn { margin-top: 48px; display: grid; grid-template-columns: 180px minmax(0, 1fr); gap: 48px; align-items: start; }
-.pn-tree { position: sticky; top: 24px; display: flex; flex-direction: column; border-left: 1px solid var(--line-strong); }
+.pn-tree { position: sticky; top: 24px; display: flex; flex-direction: column; border-left: 1px solid var(--line-strong); max-height: calc(100vh - 48px); overflow-y: auto; }
 .pn-tree a { padding: 8px 16px; margin-left: -1px; border-left: 1px solid transparent; color: var(--muted); text-decoration: none; font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; }
 .pn-tree a:hover, .pn-tree a:first-child { color: var(--gold-bright); border-left-color: var(--gold); }
 .pn-list { display: flex; flex-direction: column; gap: 20px; }
@@ -367,7 +378,24 @@ html{scroll-behavior:smooth}
 .pn-card li::marker { color: var(--gold); }
 @container (max-width: 980px) {
   .pn { grid-template-columns: minmax(0, 1fr); gap: 24px; margin-top: 32px; }
-  .pn-tree { position: static; flex-direction: row; flex-wrap: wrap; gap: 8px; border-left: 0; }
+  .pn-tree { position: static; flex-direction: row; flex-wrap: wrap; gap: 8px; border-left: 0; max-height: none; overflow: visible; }
   .pn-tree a { margin: 0; padding: 10px 14px; border: 1px solid var(--line-strong); border-radius: 999px; }
   .pn-card { padding: 20px; }
+}
+
+/* Accessibility: skip link, visible focus on links and the gallery, quieter motion. */
+.skip { position: absolute; left: 16px; top: -100px; z-index: 100; padding: 10px 16px; border-radius: 10px; background: var(--gold-bright); color: var(--tier-ink); font-weight: 800; text-decoration: none; }
+.skip:focus { top: 16px; }
+/* The skip link moves focus to <main>; no ring around the whole page. */
+main:focus { outline: none; }
+.lp-root a:focus-visible, .gal:focus-visible { outline: 2px solid var(--gold-bright); outline-offset: 3px; border-radius: 6px; }
+.vstatus:empty { margin: 0; }
+@media (prefers-reduced-motion: reduce) { .vbar { transition: none; } }
+/* Tablet: the hero badge stays inside the screen. */
+@container (max-width: 980px) { .pop { left: 12px; } }
+/* Small phones: a smaller play button, clear of the trailer caption. */
+@container (max-width: 380px) {
+  .play { width: 80px; height: 80px; }
+  .play .disc { inset: 16px; }
+  .play .disc svg { width: 20px; height: 20px; margin-left: 3px; }
 }
